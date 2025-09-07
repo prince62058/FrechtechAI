@@ -63,9 +63,14 @@ function SidebarComponent() {
               <SidebarMenuButton size="lg" asChild className="group-data-[collapsible=icon]:!justify-center">
                 <Link href="/" data-testid="sidebar-logo">
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg flex-shrink-0 min-w-8">
+                    <img 
+                      src="/attached_assets/image_1757264288316.png" 
+                      alt="FrenchTech AI Logo" 
+                      className="w-6 h-6 rounded-full"
+                    />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight min-w-0 group-data-[collapsible=icon]:hidden">
-                    <span className="truncate font-semibold">PrinceTech AI</span>
+                    <span className="truncate font-semibold">FrenchTech AI</span>
                   </div>
                 </Link>
               </SidebarMenuButton>
