@@ -2,7 +2,7 @@ import { createServer } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { generateAIResponse, generateSearchSuggestions } from "./openai";
-import { insertSearchSchema, insertConversationSchema, insertMessageSchema } from "@shared/schema";
+import { insertSearchSchema, insertConversationSchema, insertMessageSchema } from "../shared/schema.js";
 
 export async function registerRoutes(app) {
   // Auth middleware

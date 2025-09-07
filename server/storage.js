@@ -6,7 +6,7 @@ import {
   searchHistory,
   conversations,
   messages,
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { randomUUID } from "crypto";
 
 export class MemStorage {
