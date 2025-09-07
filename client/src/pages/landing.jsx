@@ -451,6 +451,11 @@ export default function Landing() {
           {/* Main Content */}
           <main className="max-w-4xl mx-auto px-4 py-16">
             <div className="text-center mb-12">
+              <img 
+                src="/ft-logo.png" 
+                alt="FrenchTech AI Logo" 
+                className="w-20 h-20 mx-auto mb-6 drop-shadow-lg"
+              />
               <h1 className="text-5xl font-light mb-6 text-cyan-400 drop-shadow-lg glow-text" data-testid="hero-title">
                 <span className="text-orange-400">French</span>Tech AI
               </h1>
