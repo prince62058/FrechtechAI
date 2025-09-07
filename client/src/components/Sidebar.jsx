@@ -64,9 +64,9 @@ function SidebarComponent() {
                 <Link href="/" data-testid="sidebar-logo">
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg flex-shrink-0 min-w-8">
                     <img 
-                      src="/attached_assets/image_1757264288316.png" 
+                      src="/ft-logo.png" 
                       alt="FrenchTech AI Logo" 
-                      className="w-6 h-6 rounded-full"
+                      className="w-6 h-6 object-contain"
                     />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight min-w-0 group-data-[collapsible=icon]:hidden">
