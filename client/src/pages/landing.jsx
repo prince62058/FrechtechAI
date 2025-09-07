@@ -303,7 +303,7 @@ export default function Landing() {
                             <div className="flex-1 min-w-0">
                               <div className="mb-2">
                                 <span className="font-medium text-sm">
-                                  {message.type === "user" ? "You" : "PrinceTech AI"}
+                                  {message.type === "user" ? "You" : "FrenchTech AI"}
                                 </span>
                                 <span className="text-xs text-muted-foreground ml-2">
                                   {message.timestamp.toLocaleTimeString('en-US', { 
@@ -362,7 +362,7 @@ export default function Landing() {
                             </Avatar>
                             <div className="flex-1">
                               <div className="mb-2">
-                                <span className="font-medium text-sm">PrinceTech AI</span>
+                                <span className="font-medium text-sm">FrenchTech AI</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
@@ -452,7 +452,7 @@ export default function Landing() {
           <main className="max-w-4xl mx-auto px-4 py-16">
             <div className="text-center mb-12">
               <h1 className="text-5xl font-light mb-6 text-cyan-400 drop-shadow-lg glow-text" data-testid="hero-title">
-                PrinceTech AI
+                FrenchTech AI
               </h1>
               <p className="text-xl text-muted-foreground mb-8 drop-shadow-sm" data-testid="hero-subtitle">
                 Ask anything and get instant, accurate answers with cited sources
