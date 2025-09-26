@@ -5,7 +5,7 @@ import passport from "passport";
 import session from "express-session";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 
 const domains = process.env.REPLIT_DOMAINS;
 if (!domains && process.env.NODE_ENV !== "production") {
