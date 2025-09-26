@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Google Gemini AI
 const geminiAPI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
-const gemini = geminiAPI ? geminiAPI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null;
+const gemini = geminiAPI ? geminiAPI.getGenerativeModel({ model: "gemini-2.0-flash-exp" }) : null;
 
 export async function generateAIResponse(query, category) {
   const systemPrompt = `You are an AI assistant that provides accurate, informative responses to user queries. 
@@ -29,12 +29,9 @@ export async function generateAIResponse(query, category) {
   // Use Gemini AI
   if (gemini) {
     try {
-      const result = await gemini.generateContent([
-        systemPrompt,
-        `User query: ${query}`
-      ]);
+      const result = await gemini.generateContent(`${systemPrompt}\n\nUser query: ${query}`);
       
-      const response = await result.response;
+      const response = result.response;
       const text = response.text();
       
       try {
@@ -54,7 +51,7 @@ export async function generateAIResponse(query, category) {
         };
       }
     } catch (error) {
-      console.error("Gemini API error:", error);
+      console.error("Gemini API error:", error.message);
       // Fall through to fallback
     }
   }
