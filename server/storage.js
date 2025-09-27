@@ -3,12 +3,13 @@ import { randomUUID } from "crypto";
 // Database storage implementation using PostgreSQL (Disabled for local development)
 export class DatabaseStorage {
   constructor() {
-    this.seedData();
+    // No seeding for disabled database storage
+    console.log("Database storage class loaded (disabled for local development)");
   }
 
   async seedData() {
     // Database storage disabled - no seeding needed
-    console.log("Database storage class loaded (disabled for local development)");
+    console.log("Database storage disabled - no seeding needed");
   }
 
   // All methods throw errors since database is disabled for local development
