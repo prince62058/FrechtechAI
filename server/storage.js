@@ -11,7 +11,7 @@ import { db } from "./db.js";
 import { randomUUID } from "crypto";
 import { eq, desc, and, like, or } from "drizzle-orm";
 
-// Database storage implementation using PostgreSQL
+// Database storage implementation using PostgreSQL (Disabled for local development)
 export class DatabaseStorage {
   constructor() {
     this.seedData();
@@ -715,4 +715,4 @@ export class MemStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
