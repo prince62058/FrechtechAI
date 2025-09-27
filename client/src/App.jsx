@@ -13,6 +13,8 @@ import Discover from "@/pages/discover";
 import Spaces from "@/pages/spaces";
 import Library from "@/pages/library";
 import Category from "@/pages/category";
+import ChatThread from "@/pages/chat-thread";
+import ChatHistory from "@/pages/chat-history";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -23,6 +25,8 @@ function Router() {
         <>
           <Route path="/" component={Landing} />
           <Route path="/search" component={Search} />
+          <Route path="/chat/:id" component={ChatThread} />
+          <Route path="/chat/history" component={ChatHistory} />
 
           <Route path="/discover" component={Discover} />
           <Route path="/spaces" component={Spaces} />
@@ -32,6 +36,8 @@ function Router() {
         <>
           <Route path="/" component={Home} />
           <Route path="/search" component={Search} />
+          <Route path="/chat/:id" component={ChatThread} />
+          <Route path="/chat/history" component={ChatHistory} />
 
           <Route path="/discover" component={Discover} />
           <Route path="/spaces" component={Spaces} />

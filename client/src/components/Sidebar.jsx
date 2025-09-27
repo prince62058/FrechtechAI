@@ -1,6 +1,7 @@
 
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -27,12 +28,22 @@ import {
   DollarSign,
   Plane,
   ShoppingBag,
-  GraduationCap
+  GraduationCap,
+  MessageSquare,
+  Clock
 } from "lucide-react";
 
 function SidebarComponent() {
   const [location] = useLocation();
   const { isAuthenticated, user } = useAuth();
+
+  // Fetch recent chat threads
+  const { data: chatThreads = [], isLoading: isLoadingChats } = useQuery({
+    queryKey: ['/api/chat/threads'],
+    queryFn: () => fetch('/api/chat/threads').then(res => res.json()),
+    enabled: true, // Always fetch threads, even for anonymous users
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
   const isActive = (href) => {
     if (href === "/") return location === "/";
@@ -131,6 +142,55 @@ function SidebarComponent() {
                   </SidebarMenuItem>
                 );
               })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Chat History Section */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Recent Chats
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {isLoadingChats ? (
+                <SidebarMenuItem>
+                  <div className="flex items-center gap-2 px-2 py-1.5 text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4 animate-spin" />
+                    Loading...
+                  </div>
+                </SidebarMenuItem>
+              ) : chatThreads.length > 0 ? (
+                chatThreads.slice(0, 5).map((thread) => (
+                  <SidebarMenuItem key={thread.id}>
+                    <SidebarMenuButton asChild data-testid={`chat-thread-${thread.id}`}>
+                      <Link href={`/chat/${thread.id}`}>
+                        <MessageSquare className="h-4 w-4" />
+                        <span className="truncate" title={thread.title}>
+                          {thread.title || 'Untitled Chat'}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))
+              ) : (
+                <SidebarMenuItem>
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                    No chat history yet
+                  </div>
+                </SidebarMenuItem>
+              )}
+              {chatThreads.length > 5 && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild data-testid="view-all-chats">
+                    <Link href="/chat/history">
+                      <Clock className="h-4 w-4" />
+                      <span>View All Chats</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
