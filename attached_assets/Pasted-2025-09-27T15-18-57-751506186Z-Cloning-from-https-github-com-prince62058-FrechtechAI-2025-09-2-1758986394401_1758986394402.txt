@@ -1,0 +1,41 @@
+2025-09-27T15:18:57.751506186Z ==> Cloning from https://github.com/prince62058/FrechtechAI
+2025-09-27T15:18:58.549154979Z ==> Checking out commit 18441c1e9c52298b639fb447f27bdb1d1efcfea7 in branch main
+2025-09-27T15:18:59.839925914Z ==> Using Node.js version 22.16.0 (default)
+2025-09-27T15:18:59.881910563Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2025-09-27T15:19:01.99782334Z ==> Running build command 'npm install; npm run build'...
+2025-09-27T15:19:12.811134936Z 
+2025-09-27T15:19:12.811161867Z added 544 packages, and audited 545 packages in 11s
+2025-09-27T15:19:12.811229998Z 
+2025-09-27T15:19:12.811240309Z 71 packages are looking for funding
+2025-09-27T15:19:12.811264989Z   run `npm fund` for details
+2025-09-27T15:19:12.841525501Z 
+2025-09-27T15:19:12.86136061Z 10 vulnerabilities (3 low, 7 moderate)
+2025-09-27T15:19:12.8613668Z 
+2025-09-27T15:19:12.86137031Z To address issues that do not require attention, run:
+2025-09-27T15:19:12.86137327Z   npm audit fix
+2025-09-27T15:19:12.861375961Z 
+2025-09-27T15:19:12.86137879Z To address all issues (including breaking changes), run:
+2025-09-27T15:19:12.861383661Z   npm audit fix --force
+2025-09-27T15:19:12.861386301Z 
+2025-09-27T15:19:12.861402151Z Run `npm audit` for details.
+2025-09-27T15:19:13.047140891Z 
+2025-09-27T15:19:13.047166032Z > rest-express@1.0.0 build
+2025-09-27T15:19:13.047171802Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-09-27T15:19:13.047178522Z 
+2025-09-27T15:19:13.228767714Z vite v5.4.19 building for production...
+2025-09-27T15:19:13.277328934Z transforming...
+2025-09-27T15:19:13.67387598Z Browserslist: browsers data (caniuse-lite) is 11 months old. Please run:
+2025-09-27T15:19:13.673901451Z   npx update-browserslist-db@latest
+2025-09-27T15:19:13.673907391Z   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+2025-09-27T15:19:16.33115238Z ✓ 1738 modules transformed.
+2025-09-27T15:19:16.586310227Z rendering chunks...
+2025-09-27T15:19:16.593560886Z computing gzip size...
+2025-09-27T15:19:16.605810127Z ../dist/public/index.html                   2.44 kB │ gzip:   1.00 kB
+2025-09-27T15:19:16.605849188Z ../dist/public/assets/index-I9IxvJv_.css   87.61 kB │ gzip:  14.28 kB
+2025-09-27T15:19:16.606002742Z ../dist/public/assets/index-CgXAvuaM.js   417.90 kB │ gzip: 125.40 kB
+2025-09-27T15:19:16.606258469Z ✓ built in 3.36s
+2025-09-27T15:19:16.649529251Z ✘ [ERROR] The entry point "server/index.ts" cannot be marked as external
+2025-09-27T15:19:16.649541941Z 
+2025-09-27T15:19:16.650450985Z 1 error
+2025-09-27T15:19:16.676104696Z ==> Build failed 😞
+2025-09-27T15:19:16.676119257Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
