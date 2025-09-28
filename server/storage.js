@@ -1,112 +1,255 @@
 import { randomUUID } from "crypto";
 
-// Database storage implementation using PostgreSQL (Disabled for local development)
+import { db } from "./db.js";
+import { eq, desc, and, ilike, sql } from "drizzle-orm";
+import * as schema from "../shared/schema.js";
+
+// Database storage implementation using PostgreSQL
 export class DatabaseStorage {
   constructor() {
-    // No seeding for disabled database storage
-    console.log("Database storage class loaded (disabled for local development)");
+    console.log("Database storage class loaded - using PostgreSQL");
+    this.seedData();
   }
 
   async seedData() {
-    // Database storage disabled - no seeding needed
-    console.log("Database storage disabled - no seeding needed");
+    console.log("Seeding database with initial data...");
+    
+    // Seed trending topics
+    const topicsToSeed = [
+      {
+        title: "Latest AI Breakthroughs in 2024",
+        description: "Discover the most significant AI developments this year",
+        category: "Technology",
+        readTime: "2 min read",
+        icon: "fas fa-fire",
+        viewCount: 1250,
+        isActive: true,
+      },
+      {
+        title: "Sustainable Investment Strategies", 
+        description: "How to build an eco-friendly investment portfolio",
+        category: "Finance",
+        readTime: "4 min read",
+        icon: "fas fa-leaf",
+        viewCount: 890,
+        isActive: true,
+      },
+      {
+        title: "Hidden Gems in Southeast Asia",
+        description: "Off-the-beaten-path destinations for adventurous travelers",
+        category: "Travel",
+        readTime: "6 min read",
+        icon: "fas fa-map-marked-alt",
+        viewCount: 567,
+        isActive: true,
+      },
+    ];
+
+    // Check if data already exists before seeding
+    const existingTopics = await db.select().from(schema.trendingTopics).limit(1);
+    if (existingTopics.length === 0) {
+      await db.insert(schema.trendingTopics).values(topicsToSeed);
+    }
+
+    // Seed spaces
+    const spacesToSeed = [
+      {
+        title: "Business Strategy",
+        description: "Market analysis, competitive research, and business planning",
+        category: "Business",
+        templateCount: 12,
+        icon: "fas fa-briefcase",
+        gradient: "from-blue-500 to-purple-600",
+        tags: ["SWOT Analysis", "Market Research"],
+        isActive: true,
+      },
+      {
+        title: "Developer Tools",
+        description: "Code review, debugging, and technical documentation",
+        category: "Technology", 
+        templateCount: 8,
+        icon: "fas fa-code",
+        gradient: "from-green-500 to-teal-600",
+        tags: ["Code Review", "Documentation"],
+        isActive: true,
+      },
+    ];
+
+    const existingSpaces = await db.select().from(schema.spaces).limit(1);
+    if (existingSpaces.length === 0) {
+      await db.insert(schema.spaces).values(spacesToSeed);
+    }
   }
 
-  // All methods throw errors since database is disabled for local development
+  // User operations
   async getUser(id) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [user] = await db.select().from(schema.users).where(eq(schema.users.id, id));
+    return user || undefined;
   }
 
   async upsertUser(userData) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [user] = await db.insert(schema.users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: schema.users.id,
+        set: {
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          profileImageUrl: userData.profileImageUrl,
+          updatedAt: sql`now()`,
+        }
+      })
+      .returning();
+    return user;
   }
 
+  // Search operations
   async createSearch(searchData) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [search] = await db.insert(schema.searches).values(searchData).returning();
+    return search;
   }
 
   async getSearchById(id) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [search] = await db.select().from(schema.searches).where(eq(schema.searches.id, id));
+    return search || undefined;
   }
 
   async getSearchesByUser(userId, limit = 50) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    return await db.select()
+      .from(schema.searches)
+      .where(eq(schema.searches.userId, userId))
+      .orderBy(desc(schema.searches.createdAt))
+      .limit(limit);
   }
 
   async getSearchHistory(userId, limit = 50) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    return await db.select()
+      .from(schema.searchHistory)
+      .where(eq(schema.searchHistory.userId, userId))
+      .orderBy(desc(schema.searchHistory.createdAt))
+      .limit(limit);
   }
 
   async addToSearchHistory(userId, searchId) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [record] = await db.insert(schema.searchHistory)
+      .values({ userId, searchId })
+      .returning();
+    return record;
   }
 
+  // Trending topics operations  
   async getTrendingTopics(limit = 10) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    return await db.select()
+      .from(schema.trendingTopics)
+      .where(eq(schema.trendingTopics.isActive, true))
+      .orderBy(desc(schema.trendingTopics.viewCount))
+      .limit(limit);
   }
 
   async createTrendingTopic(topicData) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [topic] = await db.insert(schema.trendingTopics).values(topicData).returning();
+    return topic;
   }
 
   async incrementTopicViews(id) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    await db.update(schema.trendingTopics)
+      .set({ viewCount: sql`${schema.trendingTopics.viewCount} + 1` })
+      .where(eq(schema.trendingTopics.id, id));
   }
 
   async getTrendingTopicById(id) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [topic] = await db.select().from(schema.trendingTopics).where(eq(schema.trendingTopics.id, id));
+    return topic || undefined;
   }
 
+  // Spaces operations
   async getSpaces(limit = 10) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    return await db.select()
+      .from(schema.spaces)
+      .where(eq(schema.spaces.isActive, true))
+      .orderBy(schema.spaces.createdAt)
+      .limit(limit);
   }
 
   async createSpace(spaceData) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [space] = await db.insert(schema.spaces).values(spaceData).returning();
+    return space;
   }
 
   async getSpacesByCategory(category) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    return await db.select()
+      .from(schema.spaces)
+      .where(and(
+        eq(schema.spaces.isActive, true),
+        eq(schema.spaces.category, category)
+      ));
   }
 
+  // Conversation operations
   async createConversation(conversationData) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [conversation] = await db.insert(schema.conversations).values(conversationData).returning();
+    return conversation;
   }
 
   async getConversation(id) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [conversation] = await db.select().from(schema.conversations).where(eq(schema.conversations.id, id));
+    return conversation || undefined;
   }
 
   async getConversationsByUser(userId, limit = 50) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    return await db.select()
+      .from(schema.conversations)
+      .where(eq(schema.conversations.userId, userId))
+      .orderBy(desc(schema.conversations.updatedAt))
+      .limit(limit);
   }
 
   async updateConversation(id, updates) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [conversation] = await db.update(schema.conversations)
+      .set({ ...updates, updatedAt: sql`now()` })
+      .where(eq(schema.conversations.id, id))
+      .returning();
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
+    return conversation;
   }
 
   async getRecentConversations(limit = 50) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    return await db.select()
+      .from(schema.conversations)
+      .orderBy(desc(schema.conversations.updatedAt))
+      .limit(limit);
   }
 
   async deleteConversation(id) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    await db.delete(schema.conversations).where(eq(schema.conversations.id, id));
   }
 
   async searchConversations(query, limit = 50) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    return await db.select()
+      .from(schema.conversations)
+      .where(ilike(schema.conversations.title, `%${query}%`))
+      .orderBy(desc(schema.conversations.updatedAt))
+      .limit(limit);
   }
 
+  // Message operations
   async createMessage(messageData) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    const [message] = await db.insert(schema.messages).values(messageData).returning();
+    return message;
   }
 
   async getMessagesByConversation(conversationId) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    return await db.select()
+      .from(schema.messages)
+      .where(eq(schema.messages.conversationId, conversationId))
+      .orderBy(schema.messages.createdAt);
   }
 
   async deleteMessagesByConversation(conversationId) {
-    throw new Error('Database storage is disabled. Use MemStorage instead.');
+    await db.delete(schema.messages).where(eq(schema.messages.conversationId, conversationId));
   }
 }
 
@@ -442,4 +585,4 @@ export class MemStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
