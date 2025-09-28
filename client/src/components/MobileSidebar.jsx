@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 import { 
   Home, 
   Compass, 
@@ -10,12 +11,22 @@ import {
   Plane,
   ShoppingBag,
   GraduationCap,
+  MessageSquare,
+  Clock,
   X
 } from "lucide-react";
 
 export default function MobileSidebar({ onClose }) {
   const [location] = useLocation();
   const { isAuthenticated, user } = useAuth();
+
+  // Fetch recent chat threads
+  const { data: chatThreads = [], isLoading: isLoadingChats } = useQuery({
+    queryKey: ['/api/chat/threads'],
+    queryFn: () => fetch('/api/chat/threads').then(res => res.json()),
+    enabled: true, // Always fetch threads, even for anonymous users
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
   const isActive = (href) => {
     if (href === "/") return location === "/";
@@ -121,6 +132,53 @@ export default function MobileSidebar({ onClose }) {
                 </Link>
               );
             })}
+          </div>
+        </div>
+
+        {/* Chat History Section */}
+        <div className="px-4 pb-4">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 px-3 flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Recent Chats
+          </h3>
+          <div className="space-y-2">
+            {isLoadingChats ? (
+              <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4 animate-spin" />
+                Loading...
+              </div>
+            ) : chatThreads.length > 0 ? (
+              chatThreads.slice(0, 5).map((thread) => (
+                <Link key={thread.id} href={`/chat/${thread.id}`}>
+                  <div
+                    onClick={handleItemClick}
+                    className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-accent text-foreground transition-colors cursor-pointer"
+                    data-testid={`mobile-chat-thread-${thread.id}`}
+                  >
+                    <MessageSquare className="h-5 w-5 flex-shrink-0" />
+                    <span className="font-medium truncate" title={thread.title}>
+                      {thread.title || 'Untitled Chat'}
+                    </span>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="px-3 py-2 text-sm text-muted-foreground">
+                No chat history yet
+              </div>
+            )}
+            {chatThreads.length > 5 && (
+              <Link href="/chat/history">
+                <div
+                  onClick={handleItemClick}
+                  className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-accent text-foreground transition-colors cursor-pointer"
+                  data-testid="mobile-view-all-chats"
+                >
+                  <Clock className="h-5 w-5" />
+                  <span className="font-medium">View All Chats</span>
+                </div>
+              </Link>
+            )}
           </div>
         </div>
       </div>
