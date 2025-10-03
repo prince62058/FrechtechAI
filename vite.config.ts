@@ -1,9 +1,9 @@
-import { defineConfig } from "vite";
+import { defineConfig, type UserConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
-export default defineConfig(async () => {
-  let plugins = [react()];
+export default defineConfig(async (): Promise<UserConfig> => {
+  let plugins: any[] = [react()];
 
   if (process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined) {
     try {
@@ -11,7 +11,7 @@ export default defineConfig(async () => {
         import("@replit/vite-plugin-runtime-error-modal"),
         import("@replit/vite-plugin-cartographer")
       ]);
-      plugins = [react(), errorModal.default(), cartographer.cartographer()];
+      plugins.push(errorModal.default(), cartographer.cartographer());
     } catch (e) {
       console.log("Running without Replit plugins (VS Code mode)");
     }

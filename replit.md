@@ -51,16 +51,40 @@ Preferred communication style: Simple, everyday language.
 - **Environment Variable**: MONGODB_URI for database connection string
 
 ## AI Integration
-- **Provider**: OpenAI GPT-5 for generating search responses
+- **Provider**: Google Gemini AI for generating search responses
 - **Features**: Query processing, source citation, search suggestions
 - **Response Format**: Structured JSON with content and sources
 - **Error Handling**: Graceful fallbacks and retry logic
+- **Environment Variable**: GEMINI_API_KEY for API authentication
 
 ## External Dependencies
 
-- **Database**: Neon Database (PostgreSQL serverless)
-- **AI Service**: OpenAI API for GPT-5 responses
-- **Authentication**: Replit Auth service for user authentication
-- **Hosting**: Replit platform with development tooling integration
+- **Database**: MongoDB (Mongoose ODM) - compatible with MongoDB Atlas for production
+- **AI Service**: Google Gemini API for AI-powered responses
+- **Authentication**: JWT-based authentication with bcrypt password hashing
+- **Hosting**: Designed for Replit with Render deployment support
 - **Build Tools**: Vite with React plugin and TypeScript support
 - **UI Components**: Radix UI primitives and Lucide React icons
+
+## Deployment
+
+The application is configured for deployment on Render:
+
+### Render Deployment (Production)
+- **Configuration File**: `render.yaml` for automatic blueprint deployment
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `npm start`
+- **Required Environment Variables**:
+  - `NODE_ENV=production`
+  - `MONGODB_URI` (MongoDB Atlas connection string)
+  - `GEMINI_API_KEY` (Google Gemini API key)
+  - `PORT` (auto-assigned by Render, default 10000)
+
+### Local Development
+- **Dev Command**: `npm run dev`
+- **Build Command**: `npm run build`
+- **Production Start**: `npm start`
+- **Port**: 5000 (configurable via PORT env var)
+- **Database**: Local MongoDB or MongoDB Atlas
+
+See `RENDER_DEPLOYMENT.md` for detailed deployment instructions.
