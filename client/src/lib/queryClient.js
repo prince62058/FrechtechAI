@@ -7,20 +7,40 @@ async function throwIfResNotOk(res) {
   }
 }
 
-export async function apiRequest(method, url, data) {
+export async function apiRequest({ method = "POST", url, body }) {
+  const token = localStorage.getItem("token");
+  const headers = body ? { "Content-Type": "application/json" } : {};
+  
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
     credentials: "include",
   });
 
   await throwIfResNotOk(res);
-  return res;
+  
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    return null;
+  }
+  
+  return res.json();
 }
 
 export const getQueryFn = (options) => async ({ queryKey }) => {
+  const token = localStorage.getItem("token");
+  const headers = {};
+  
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const res = await fetch(queryKey.join("/"), {
+    headers,
     credentials: "include",
   });
 

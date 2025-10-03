@@ -88,6 +88,16 @@ export class DatabaseStorage {
     return await schema.User.findById(id);
   }
 
+  async getUserByEmail(email) {
+    return await schema.User.findOne({ email: email.toLowerCase() });
+  }
+
+  async createUser(userData) {
+    const user = new schema.User(userData);
+    await user.save();
+    return user;
+  }
+
   async upsertUser(userData) {
     const user = await schema.User.findByIdAndUpdate(
       userData.id,

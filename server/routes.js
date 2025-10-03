@@ -1,13 +1,109 @@
 import { createServer } from "http";
 import { storage } from "./storage.js";
 import { generateAIResponse, generateSearchSuggestions } from "./openai.js";
-import { insertSearchSchema, insertConversationSchema, insertMessageSchema } from "../shared/schema.js";
+import { insertSearchSchema, insertConversationSchema, insertMessageSchema, signupSchema, loginSchema } from "../shared/schema.js";
+import { generateToken, hashPassword, comparePassword, authMiddleware, optionalAuth } from "./auth.js";
 
 export async function registerRoutes(app) {
   // Initialize database if needed
   if (storage.initialize) {
     await storage.initialize();
   }
+
+  // Authentication routes
+  app.post('/api/auth/signup', async (req, res) => {
+    try {
+      const validatedData = signupSchema.parse(req.body);
+      const { email, password, firstName, lastName } = validatedData;
+
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: 'User already exists with this email' });
+      }
+
+      const hashedPassword = await hashPassword(password);
+      
+      const user = await storage.createUser({
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+      });
+
+      const token = generateToken(user._id.toString());
+
+      res.json({
+        token,
+        user: {
+          id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        },
+      });
+    } catch (error) {
+      console.error('Signup error:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: 'Signup failed' });
+    }
+  });
+
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      const { email, password } = validatedData;
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      const isValidPassword = await comparePassword(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      const token = generateToken(user._id.toString());
+
+      res.json({
+        token,
+        user: {
+          id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        },
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
+  app.get('/api/auth/user', authMiddleware, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.json({
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+      });
+    } catch (error) {
+      console.error('Get user error:', error);
+      res.status(500).json({ message: 'Failed to get user' });
+    }
+  });
 
   // Search routes
   app.post('/api/search', async (req, res) => {

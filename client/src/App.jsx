@@ -15,12 +15,17 @@ import Library from "@/pages/library";
 import Category from "@/pages/category";
 import ChatThread from "@/pages/chat-thread";
 import ChatHistory from "@/pages/chat-history";
+import Login from "@/pages/login";
+import Signup from "@/pages/signup";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
   return (
     <Switch>
+      <Route path="/login" component={Login} />
+      <Route path="/signup" component={Signup} />
+      
       {isLoading || !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
