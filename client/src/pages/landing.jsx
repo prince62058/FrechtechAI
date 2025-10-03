@@ -42,14 +42,14 @@ export default function Landing() {
 
   const chatMutation = useMutation({
     mutationFn: async (message) => {
-      const response = await apiRequest("POST", "/api/chat/threads", { 
-        message: message,
-        threadId: currentThreadId
+      return await apiRequest({ 
+        method: "POST",
+        url: "/api/chat/threads",
+        body: {
+          message: message,
+          threadId: currentThreadId
+        }
       });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
     },
     onSuccess: (data, variables) => {
       // Update current thread ID
@@ -104,19 +104,19 @@ export default function Landing() {
   // Load specific thread
   const loadThread = async (threadId) => {
     try {
-      const response = await apiRequest("GET", `/api/chat/threads/${threadId}`);
-      if (response.ok) {
-        const thread = await response.json();
-        setCurrentThreadId(threadId);
-        setMessages(thread.messages.map((msg, index) => ({
-          id: `${msg.timestamp || Date.now()}-${index}`,
-          type: msg.type,
-          content: msg.content,
-          sources: msg.sources || [],
-          timestamp: new Date(msg.timestamp)
-        })));
-        setShowChat(true);
-      }
+      const thread = await apiRequest({ 
+        method: "GET",
+        url: `/api/chat/threads/${threadId}`
+      });
+      setCurrentThreadId(threadId);
+      setMessages(thread.messages.map((msg, index) => ({
+        id: `${msg.timestamp || Date.now()}-${index}`,
+        type: msg.type,
+        content: msg.content,
+        sources: msg.sources || [],
+        timestamp: new Date(msg.timestamp)
+      })));
+      setShowChat(true);
     } catch (error) {
       toast({
         title: "Error",

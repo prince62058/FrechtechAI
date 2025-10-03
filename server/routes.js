@@ -296,7 +296,7 @@ export async function registerRoutes(app) {
           title,
           userId: null
         });
-        conversationId = conversation._id.toString();
+        conversationId = conversation._id ? conversation._id.toString() : conversation.id;
       }
 
       // Add user message
