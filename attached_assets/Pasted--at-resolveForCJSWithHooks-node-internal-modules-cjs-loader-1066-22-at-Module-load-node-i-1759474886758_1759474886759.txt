@@ -1,0 +1,142 @@
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1066:22)
+    at Module._load (node:internal/modules/cjs/loader:1215:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v24.2.0
+princekumar@Princes-MacBook-Air Frenchtech Latest % clear
+princekumar@Princes-MacBook-Air Frenchtech Latest % npm run build       # compile TS/JS
+npm run start       # run production
+
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.js --platform=node --packages=external --bundle --format=esm --outdir=dist # compile TS/JS
+
+vite v5.4.19 building for production...
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 1742 modules transformed.
+../dist/public/index.html                   2.50 kB │ gzip:   1.02 kB
+../dist/public/assets/index-pq4q1t0n.css   89.17 kB │ gzip:  14.51 kB
+../dist/public/assets/index-CccDsLbi.js   435.30 kB │ gzip: 128.28 kB
+✓ built in 1.42s
+✘ [ERROR] The entry point "TS/JS" cannot be marked as external
+
+✘ [ERROR] The entry point "#" cannot be marked as external
+
+✘ [ERROR] The entry point "compile" cannot be marked as external
+
+3 errors
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js # run production
+
+node:internal/modules/cjs/loader:1408
+  throw err;
+  ^
+
+Error: Cannot find module '/Users/princekumar/Desktop/Frenchtech Latest/dist/index.js'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1405:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1061:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1066:22)
+    at Module._load (node:internal/modules/cjs/loader:1215:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v24.2.0
+princekumar@Princes-MacBook-Air Frenchtech Latest % rm -rf dist
+mkdir dist
+
+princekumar@Princes-MacBook-Air Frenchtech Latest % npm run build
+npm start
+
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.js --bundle --platform=node --outfile=dist/index.js
+
+vite v5.4.19 building for production...
+transforming (1) index.htmlBrowserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 1742 modules transformed.
+../dist/public/index.html                   2.50 kB │ gzip:   1.02 kB
+../dist/public/assets/index-pq4q1t0n.css   89.17 kB │ gzip:  14.51 kB
+../dist/public/assets/index-CccDsLbi.js   435.30 kB │ gzip: 128.28 kB
+✓ built in 1.43s
+▲ [WARNING] "import.meta" is not available with the "cjs" output format and will be empty [empty-import-meta]
+
+    server/vite.js:68:32:
+      68 │   const distPath = path.resolve(import.meta.dirname, "public");
+         ╵                                 ~~~~~~~~~~~
+
+  You need to set the output format to "esm" for "import.meta" to work correctly.
+
+▲ [WARNING] "esbuild" should be marked as external for use with "require.resolve" [require-resolve-not-external]
+
+    node_modules/vite/node_modules/esbuild/lib/main.js:1653:36:
+      1653 │   const libMainJS = require.resolve("esbuild");
+           ╵                                     ~~~~~~~~~
+
+✘ [ERROR] Could not resolve "../pkg"
+
+    node_modules/lightningcss/node/index.js:17:27:
+      17 │   module.exports = require(`../pkg`);
+         ╵                            ~~~~~~~~
+
+✘ [ERROR] No loader is configured for ".node" files: node_modules/fsevents/fsevents.node
+
+    node_modules/fsevents/fsevents.js:13:23:
+      13 │ const Native = require("./fsevents.node");
+         ╵                        ~~~~~~~~~~~~~~~~~
+
+▲ [WARNING] The glob pattern require("../lightningcss.*.node") did not match any files [empty-glob]
+
+    node_modules/lightningcss/node/index.js:22:29:
+      22 │     module.exports = require(`../lightningcss.${parts.join('-')}.node`);
+         ╵                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+3 warnings and 2 errors
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+
+node:internal/modules/cjs/loader:1408
+  throw err;
+  ^
+
+Error: Cannot find module '/Users/princekumar/Desktop/Frenchtech Latest/dist/index.js'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1405:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1061:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1066:22)
+    at Module._load (node:internal/modules/cjs/loader:1215:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v24.2.0
+princekumar@Princes-MacBook-Air Frenchtech Latest % npm run dev
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development node server/index.js
+
+[dotenv@17.2.3] injecting env (9) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+12:26:23 PM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+12:28:22 PM [express] GET /api/chat/threads 304 in 10ms :: []
