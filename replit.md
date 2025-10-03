@@ -2,6 +2,13 @@
 
 **PrinceTech AI** is a modern AI-powered search and discovery platform built with React, TypeScript, and Express. The application provides an intelligent search experience with features like trending topics, categorized content, user spaces, and personalized search history. It's designed as a Perplexity-like interface where users can ask questions and receive AI-generated responses with cited sources.
 
+**Recent Updates:**
+- Added JWT-based authentication system with signup/login functionality
+- Made codebase compatible with both Replit and VS Code environments
+- Implemented secure password hashing with bcrypt
+- Created dedicated authentication pages with modern UI
+- Updated MongoDB schema to support user authentication
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -24,17 +31,24 @@ Preferred communication style: Simple, everyday language.
 - **File Structure**: Modular approach with separate route handlers and business logic
 
 ## Authentication System
-- **Provider**: Replit Auth using OpenID Connect (OIDC)
-- **Session Management**: Express sessions with PostgreSQL storage via connect-pg-simple
-- **Security**: HTTP-only cookies, secure session handling, and proper CSRF protection
-- **User Management**: Automatic user creation and profile management
+- **Authentication Method**: JWT (JSON Web Tokens) for stateless authentication
+- **Password Security**: Bcrypt for password hashing with salt rounds
+- **Token Management**: Tokens stored in localStorage, sent via Authorization header
+- **User Management**: Email/password-based signup and login with validation
+- **Security Features**: 
+  - Password minimum length requirements
+  - Email validation
+  - Secure token generation and verification
+  - Protected API endpoints with auth middleware
+  - Automatic token cleanup on unauthorized requests
 
 ## Database & Data Storage
-- **Primary Database**: PostgreSQL with Drizzle ORM
-- **Schema Management**: Drizzle Kit for migrations and schema management
-- **Connection**: Neon Database serverless PostgreSQL
-- **Storage Interface**: Abstracted storage layer with both memory and database implementations
-- **Data Models**: Users, searches, search history, trending topics, and spaces
+- **Primary Database**: MongoDB with Mongoose ODM
+- **Schema Management**: Mongoose schemas with validation
+- **Connection**: MongoDB Atlas or local MongoDB instance
+- **Storage Interface**: Abstracted storage layer for database operations
+- **Data Models**: Users (with authentication), searches, search history, trending topics, spaces, conversations, and messages
+- **Environment Variable**: MONGODB_URI for database connection string
 
 ## AI Integration
 - **Provider**: OpenAI GPT-5 for generating search responses
