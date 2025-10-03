@@ -1,14 +1,17 @@
 import { randomUUID } from "crypto";
-
-import { db } from "./db.js";
-import { eq, desc, and, ilike, sql } from "drizzle-orm";
+import { connectDB } from "./db.js";
 import * as schema from "../shared/schema.js";
 
-// Database storage implementation using PostgreSQL
+// Database storage implementation using MongoDB
 export class DatabaseStorage {
   constructor() {
-    console.log("Database storage class loaded - using PostgreSQL");
-    this.seedData();
+    console.log("Database storage class loaded - using MongoDB");
+    this.initializeDB();
+  }
+
+  async initializeDB() {
+    await connectDB();
+    await this.seedData();
   }
 
   async seedData() {
@@ -46,9 +49,9 @@ export class DatabaseStorage {
     ];
 
     // Check if data already exists before seeding
-    const existingTopics = await db.select().from(schema.trendingTopics).limit(1);
-    if (existingTopics.length === 0) {
-      await db.insert(schema.trendingTopics).values(topicsToSeed);
+    const existingTopicsCount = await schema.TrendingTopic.countDocuments();
+    if (existingTopicsCount === 0) {
+      await schema.TrendingTopic.insertMany(topicsToSeed);
     }
 
     // Seed spaces
@@ -75,141 +78,127 @@ export class DatabaseStorage {
       },
     ];
 
-    const existingSpaces = await db.select().from(schema.spaces).limit(1);
-    if (existingSpaces.length === 0) {
-      await db.insert(schema.spaces).values(spacesToSeed);
+    const existingSpacesCount = await schema.Space.countDocuments();
+    if (existingSpacesCount === 0) {
+      await schema.Space.insertMany(spacesToSeed);
     }
   }
 
   // User operations
   async getUser(id) {
-    const [user] = await db.select().from(schema.users).where(eq(schema.users.id, id));
-    return user || undefined;
+    return await schema.User.findById(id);
   }
 
   async upsertUser(userData) {
-    const [user] = await db.insert(schema.users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: schema.users.id,
-        set: {
-          email: userData.email,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          profileImageUrl: userData.profileImageUrl,
-          updatedAt: sql`now()`,
-        }
-      })
-      .returning();
+    const user = await schema.User.findByIdAndUpdate(
+      userData.id,
+      userData,
+      { new: true, upsert: true }
+    );
     return user;
   }
 
   // Search operations
   async createSearch(searchData) {
-    const [search] = await db.insert(schema.searches).values(searchData).returning();
+    const search = new schema.Search(searchData);
+    await search.save();
     return search;
   }
 
   async getSearchById(id) {
-    const [search] = await db.select().from(schema.searches).where(eq(schema.searches.id, id));
-    return search || undefined;
+    return await schema.Search.findById(id);
   }
 
   async getSearchesByUser(userId, limit = 50) {
-    return await db.select()
-      .from(schema.searches)
-      .where(eq(schema.searches.userId, userId))
-      .orderBy(desc(schema.searches.createdAt))
+    return await schema.Search
+      .find({ userId })
+      .sort({ createdAt: -1 })
       .limit(limit);
   }
 
   async getSearchHistory(userId, limit = 50) {
-    return await db.select()
-      .from(schema.searchHistory)
-      .where(eq(schema.searchHistory.userId, userId))
-      .orderBy(desc(schema.searchHistory.createdAt))
+    return await schema.SearchHistory
+      .find({ userId })
+      .sort({ createdAt: -1 })
       .limit(limit);
   }
 
   async addToSearchHistory(userId, searchId) {
-    const [record] = await db.insert(schema.searchHistory)
-      .values({ userId, searchId })
-      .returning();
+    const record = new schema.SearchHistory({ userId, searchId });
+    await record.save();
     return record;
   }
 
   // Trending topics operations  
   async getTrendingTopics(limit = 10) {
-    return await db.select()
-      .from(schema.trendingTopics)
-      .where(eq(schema.trendingTopics.isActive, true))
-      .orderBy(desc(schema.trendingTopics.viewCount))
+    return await schema.TrendingTopic
+      .find({ isActive: true })
+      .sort({ viewCount: -1 })
       .limit(limit);
   }
 
   async createTrendingTopic(topicData) {
-    const [topic] = await db.insert(schema.trendingTopics).values(topicData).returning();
+    const topic = new schema.TrendingTopic(topicData);
+    await topic.save();
     return topic;
   }
 
   async incrementTopicViews(id) {
-    await db.update(schema.trendingTopics)
-      .set({ viewCount: sql`${schema.trendingTopics.viewCount} + 1` })
-      .where(eq(schema.trendingTopics.id, id));
+    await schema.TrendingTopic.findByIdAndUpdate(
+      id,
+      { $inc: { viewCount: 1 } }
+    );
   }
 
   async getTrendingTopicById(id) {
-    const [topic] = await db.select().from(schema.trendingTopics).where(eq(schema.trendingTopics.id, id));
-    return topic || undefined;
+    return await schema.TrendingTopic.findById(id);
   }
 
   // Spaces operations
   async getSpaces(limit = 10) {
-    return await db.select()
-      .from(schema.spaces)
-      .where(eq(schema.spaces.isActive, true))
-      .orderBy(schema.spaces.createdAt)
+    return await schema.Space
+      .find({ isActive: true })
+      .sort({ createdAt: 1 })
       .limit(limit);
   }
 
   async createSpace(spaceData) {
-    const [space] = await db.insert(schema.spaces).values(spaceData).returning();
+    const space = new schema.Space(spaceData);
+    await space.save();
     return space;
   }
 
   async getSpacesByCategory(category) {
-    return await db.select()
-      .from(schema.spaces)
-      .where(and(
-        eq(schema.spaces.isActive, true),
-        eq(schema.spaces.category, category)
-      ));
+    return await schema.Space.find({ 
+      isActive: true, 
+      category 
+    });
   }
 
   // Conversation operations
   async createConversation(conversationData) {
-    const [conversation] = await db.insert(schema.conversations).values(conversationData).returning();
+    const conversation = new schema.Conversation(conversationData);
+    await conversation.save();
     return conversation;
   }
 
   async getConversation(id) {
-    const [conversation] = await db.select().from(schema.conversations).where(eq(schema.conversations.id, id));
-    return conversation || undefined;
+    return await schema.Conversation.findById(id);
   }
 
   async getConversationsByUser(userId, limit = 50) {
-    return await db.select()
-      .from(schema.conversations)
-      .where(eq(schema.conversations.userId, userId))
-      .orderBy(desc(schema.conversations.updatedAt))
+    return await schema.Conversation
+      .find({ userId })
+      .sort({ updatedAt: -1 })
       .limit(limit);
   }
 
   async updateConversation(id, updates) {
-    const [conversation] = await db.update(schema.conversations)
-      .set({ ...updates, updatedAt: sql`now()` })
-      .where(eq(schema.conversations.id, id))
-      .returning();
+    const conversation = await schema.Conversation.findByIdAndUpdate(
+      id,
+      updates,
+      { new: true }
+    );
     if (!conversation) {
       throw new Error('Conversation not found');
     }
@@ -217,39 +206,38 @@ export class DatabaseStorage {
   }
 
   async getRecentConversations(limit = 50) {
-    return await db.select()
-      .from(schema.conversations)
-      .orderBy(desc(schema.conversations.updatedAt))
+    return await schema.Conversation
+      .find()
+      .sort({ updatedAt: -1 })
       .limit(limit);
   }
 
   async deleteConversation(id) {
-    await db.delete(schema.conversations).where(eq(schema.conversations.id, id));
+    await schema.Conversation.findByIdAndDelete(id);
   }
 
   async searchConversations(query, limit = 50) {
-    return await db.select()
-      .from(schema.conversations)
-      .where(ilike(schema.conversations.title, `%${query}%`))
-      .orderBy(desc(schema.conversations.updatedAt))
+    return await schema.Conversation
+      .find({ title: { $regex: query, $options: 'i' } })
+      .sort({ updatedAt: -1 })
       .limit(limit);
   }
 
   // Message operations
   async createMessage(messageData) {
-    const [message] = await db.insert(schema.messages).values(messageData).returning();
+    const message = new schema.Message(messageData);
+    await message.save();
     return message;
   }
 
   async getMessagesByConversation(conversationId) {
-    return await db.select()
-      .from(schema.messages)
-      .where(eq(schema.messages.conversationId, conversationId))
-      .orderBy(schema.messages.createdAt);
+    return await schema.Message
+      .find({ conversationId })
+      .sort({ createdAt: 1 });
   }
 
   async deleteMessagesByConversation(conversationId) {
-    await db.delete(schema.messages).where(eq(schema.messages.conversationId, conversationId));
+    await schema.Message.deleteMany({ conversationId });
   }
 }
 
@@ -473,6 +461,10 @@ export class MemStorage {
       topic.viewCount = (topic.viewCount || 0) + 1;
       this.trendingTopics.set(id, topic);
     }
+  }
+
+  async getTrendingTopicById(id) {
+    return this.trendingTopics.get(id);
   }
 
   // Spaces operations
