@@ -1,20 +1,27 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-export default defineConfig({
+const loadReplitPlugins = async () => {
+  if (process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined) {
+    try {
+      const [errorModal, cartographer] = await Promise.all([
+        import("@replit/vite-plugin-runtime-error-modal"),
+        import("@replit/vite-plugin-cartographer")
+      ]);
+      return [errorModal.default(), cartographer.cartographer()];
+    } catch (e) {
+      console.log("Running without Replit plugins (VS Code mode)");
+      return [];
+    }
+  }
+  return [];
+};
+
+export default defineConfig(async () => ({
   plugins: [
     react(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-        ]
-      : []),
+    ...(await loadReplitPlugins()),
   ],
   resolve: {
     alias: {
@@ -34,4 +41,4 @@ export default defineConfig({
       deny: ["**/.*"],
     },
   },
-});
+}));
