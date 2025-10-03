@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 import { z } from 'zod';
 
 const UserSchema = new mongoose.Schema({
-  email: { type: String, unique: true, sparse: true },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  password: { type: String, required: true },
   firstName: { type: String },
   lastName: { type: String },
   profileImageUrl: { type: String },
@@ -104,4 +105,16 @@ export const insertMessageSchema = z.object({
   role: z.string(),
   content: z.string(),
   sources: z.any().optional(),
+});
+
+export const signupSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
 });
