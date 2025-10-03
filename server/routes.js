@@ -4,6 +4,11 @@ import { generateAIResponse, generateSearchSuggestions } from "./openai.js";
 import { insertSearchSchema, insertConversationSchema, insertMessageSchema } from "../shared/schema.js";
 
 export async function registerRoutes(app) {
+  // Initialize database if needed
+  if (storage.initialize) {
+    await storage.initialize();
+  }
+
   // Search routes
   app.post('/api/search', async (req, res) => {
     try {

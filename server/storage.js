@@ -6,10 +6,9 @@ import * as schema from "../shared/schema.js";
 export class DatabaseStorage {
   constructor() {
     console.log("Database storage class loaded - using MongoDB");
-    this.initializeDB();
   }
 
-  async initializeDB() {
+  async initialize() {
     await connectDB();
     await this.seedData();
   }
@@ -577,4 +576,6 @@ export class MemStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Use in-memory storage since MongoDB is not available
+// To use MongoDB, set MONGODB_URI environment variable with your MongoDB connection string
+export const storage = new MemStorage();
