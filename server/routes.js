@@ -1,25 +1,9 @@
 import { createServer } from "http";
 import { storage } from "./storage.js";
-import { setupAuth, isAuthenticated } from "./replitAuth.js";
 import { generateAIResponse, generateSearchSuggestions } from "./openai.js";
 import { insertSearchSchema, insertConversationSchema, insertMessageSchema } from "../shared/schema.js";
 
 export async function registerRoutes(app) {
-  // Auth middleware
-  await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
-
   // Search routes
   app.post('/api/search', async (req, res) => {
     try {
@@ -48,16 +32,11 @@ export async function registerRoutes(app) {
         response: aiResponse.content,
         category: category || null,
         sources: aiResponse.sources,
-        userId: req.user?.claims?.sub || null,
+        userId: null,
       });
 
-      // Add to user's search history if authenticated
-      if (req.user?.claims?.sub) {
-        await storage.addToSearchHistory(req.user.claims.sub, search.id);
-      }
-
       res.json({
-        searchId: search.id,
+        searchId: search._id,
         query,
         response: aiResponse.content,
         sources: aiResponse.sources || [],
@@ -95,18 +74,6 @@ export async function registerRoutes(app) {
     } catch (error) {
       console.error("Get search error:", error);
       res.status(500).json({ message: "Failed to get search" });
-    }
-  });
-
-  // User search history
-  app.get('/api/search/history', isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const searches = await storage.getSearchesByUser(userId, 50);
-      res.json(searches);
-    } catch (error) {
-      console.error("Get search history error:", error);
-      res.status(500).json({ message: "Failed to get search history" });
     }
   });
 
@@ -194,113 +161,7 @@ export async function registerRoutes(app) {
     }
   });
 
-  // Conversation routes
-  app.post('/api/conversations', isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const validation = insertConversationSchema.safeParse(req.body);
-      
-      if (!validation.success) {
-        return res.status(400).json({ message: "Invalid conversation data", errors: validation.error.errors });
-      }
-
-      const conversation = await storage.createConversation({
-        ...validation.data,
-        userId,
-      });
-
-      res.json(conversation);
-    } catch (error) {
-      console.error("Create conversation error:", error);
-      res.status(500).json({ message: "Failed to create conversation" });
-    }
-  });
-
-  app.get('/api/conversations', isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const conversations = await storage.getConversationsByUser(userId);
-      res.json(conversations);
-    } catch (error) {
-      console.error("Get conversations error:", error);
-      res.status(500).json({ message: "Failed to get conversations" });
-    }
-  });
-
-  app.get('/api/conversations/:id', isAuthenticated, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const conversation = await storage.getConversation(id);
-      
-      if (!conversation) {
-        return res.status(404).json({ message: "Conversation not found" });
-      }
-
-      // Check if user owns this conversation
-      if (conversation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      res.json(conversation);
-    } catch (error) {
-      console.error("Get conversation error:", error);
-      res.status(500).json({ message: "Failed to get conversation" });
-    }
-  });
-
-  // Message routes
-  app.post('/api/conversations/:id/messages', isAuthenticated, async (req, res) => {
-    try {
-      const { id: conversationId } = req.params;
-      const userId = req.user.claims.sub;
-
-      // Verify conversation exists and user owns it
-      const conversation = await storage.getConversation(conversationId);
-      if (!conversation || conversation.userId !== userId) {
-        return res.status(404).json({ message: "Conversation not found" });
-      }
-
-      const validation = insertMessageSchema.safeParse({
-        ...req.body,
-        conversationId,
-      });
-
-      if (!validation.success) {
-        return res.status(400).json({ message: "Invalid message data", errors: validation.error.errors });
-      }
-
-      const message = await storage.createMessage(validation.data);
-
-      // Update conversation timestamp
-      await storage.updateConversation(conversationId, { updatedAt: new Date() });
-
-      res.json(message);
-    } catch (error) {
-      console.error("Create message error:", error);
-      res.status(500).json({ message: "Failed to create message" });
-    }
-  });
-
-  app.get('/api/conversations/:id/messages', isAuthenticated, async (req, res) => {
-    try {
-      const { id: conversationId } = req.params;
-      const userId = req.user.claims.sub;
-
-      // Verify conversation exists and user owns it
-      const conversation = await storage.getConversation(conversationId);
-      if (!conversation || conversation.userId !== userId) {
-        return res.status(404).json({ message: "Conversation not found" });
-      }
-
-      const messages = await storage.getMessagesByConversation(conversationId);
-      res.json(messages);
-    } catch (error) {
-      console.error("Get messages error:", error);
-      res.status(500).json({ message: "Failed to get messages" });
-    }
-  });
-
-  // PostgreSQL Chat Threads API (using conversations)
+  // Chat Threads API (using conversations)
   app.post('/api/chat/threads', async (req, res) => {
     try {
       const { message, threadId } = req.body;
@@ -332,9 +193,9 @@ export async function registerRoutes(app) {
         const title = message.length > 50 ? message.substring(0, 47) + "..." : message;
         conversation = await storage.createConversation({
           title,
-          userId: null // Allow anonymous conversations for chat threads
+          userId: null
         });
-        conversationId = conversation.id;
+        conversationId = conversation._id.toString();
       }
 
       // Add user message
@@ -390,18 +251,18 @@ export async function registerRoutes(app) {
       
       // Transform to match expected format
       const threads = conversations.map(conv => ({
-        id: conv.id,
+        id: conv._id,
         title: conv.title || 'Untitled',
         createdAt: conv.createdAt,
         updatedAt: conv.updatedAt,
         lastMessage: conv.summary || '',
-        messageCount: 0 // Would need separate query to get exact count
+        messageCount: 0
       }));
       
       res.json(threads);
     } catch (error) {
       console.error("Get chat threads error:", error);
-      res.json([]); // Return empty array instead of error
+      res.json([]);
     }
   });
 
@@ -416,7 +277,7 @@ export async function registerRoutes(app) {
       const messages = await storage.getMessagesByConversation(req.params.id);
       
       const thread = {
-        id: conversation.id,
+        id: conversation._id,
         title: conversation.title,
         messages: messages.map(msg => ({
           type: msg.role === 'user' ? 'user' : 'ai',
@@ -468,7 +329,7 @@ export async function registerRoutes(app) {
       
       // Transform to match expected format
       const threads = conversations.map(conv => ({
-        id: conv.id,
+        id: conv._id,
         title: conv.title || 'Untitled',
         createdAt: conv.createdAt,
         updatedAt: conv.updatedAt,
@@ -493,15 +354,6 @@ export async function registerRoutes(app) {
       }
 
       let convId = conversationId;
-      
-      // If authenticated and no conversation ID, create a new conversation
-      if (req.user?.claims?.sub && !convId) {
-        const conversation = await storage.createConversation({
-          userId: req.user.claims.sub,
-          title: message.length > 50 ? message.substring(0, 50) + "..." : message,
-        });
-        convId = conversation.id;
-      }
 
       // Generate AI response
       const aiResponse = await generateAIResponse(message);
